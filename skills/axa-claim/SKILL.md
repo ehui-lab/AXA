@@ -1,63 +1,45 @@
 ---
 name: axa-claim
-description: Use this skill whenever Eric drops a medical receipt image, PDF, or photo that looks like a Hong Kong outpatient receipt — especially from Union Hospital Polyclinic, Virtus Children at 818, or one that mentions HUI HARVEY / HUI HARRIS, or an "MOSxx-xxxxxxx" invoice number. Also use when Eric says anything like "submit AXA claim", "claim this on AXA", "file this with AXA", or drops a receipt into the AXA project folder. Walks the AXA Global Healthcare portal end-to-end using Playwright MCP, fills the outpatient claim form, and submits completely.
+description: Use this when Eric drops a medical receipt image or says "submit AXA claim", "claim this", or "file with AXA". Submits an outpatient claim on the AXA Global Healthcare portal via Playwright.
 ---
 
-# axa-claim — AXA Global Healthcare outpatient claim submission
+# axa-claim — Submit an outpatient claim
 
-## When to trigger
+## Before starting
 
-Trigger automatically when ANY of the following is true:
-- A receipt image / PDF is dropped and the project folder `C:\Users\Eric\Github\AXA` is connected
-- The receipt mentions Union Hospital, Virtus Children at 818, MOSxx-xxxxxxx invoice numbers, or one of the patient names in `reference/secrets.json`
-- Eric says "submit AXA claim", "claim this", "file with AXA", or similar
+Read:
+1. `C:\Users\Eric\Github\AXA\reference\secrets.json` — credentials and patient profiles
+2. `C:\Users\Eric\Github\AXA\claims_data\AXA_Claims_Log.json` — check for duplicates
 
-## Always read these files first
+## Steps
 
-1. `C:\Users\Eric\Github\AXA\reference\secrets.json` — all credentials, names, policy info
-2. `C:\Users\Eric\Github\AXA\claims_data\AXA_Claims_Log.json` — to avoid duplicate submissions
-
-All sensitive values (email, password, policy number, patient names, bank account) come from `secrets.json`. Never hardcode them.
-
-## Rules
-
-- One claim per patient per visit — never combine.
-- English receipts only — if not in English, stop and flag.
-- HKD only — if different currency, stop and ask.
-- Never delete receipts — always move to `invoices\submitted_claims\`.
-- Receipts must be in `invoices\receipts_inbox\` for upload to work.
-- If the invoice already exists in the log (same patient + date), stop and flag.
-
-## Step-by-step
-
-### 1. Extract receipt data
+### 1. Extract from receipt
 
 Read the receipt image. Pull:
-- Patient name → match via `secrets.json` dependants `match_keywords`
-- Visit date, doctor name, diagnosis (use verbatim for the symptoms field)
-- Consultation fee, medication, lab amounts, and **total** (HKD)
-- Payment method
+- Patient name, visit date, doctor, diagnosis
+- Consultation fee, medication, lab amounts, **total** (HKD)
+- Payment method, invoice number
 
-Ask Eric if any field is unclear before proceeding.
+Ask Eric if anything is unclear before proceeding.
 
-### 2. Match the patient
+### 2. Match patient
 
-Look up in `secrets.json` → `dependants` using `match_keywords`.
-Use `portal_label` for the portal dropdown and `first_name` for file naming.
+Look up in `secrets.json` → `dependants` via `match_keywords`.
+Use `portal_label` for the portal dropdown, `first_name` for file naming.
+One patient at a time — never combine.
 
 ### 3. Check for duplicates
 
-Scan `claims_data\AXA_Claims_Log.json`. Stop and flag if same patient + visit date exists.
+Scan `claims_data\AXA_Claims_Log.json`. If same patient + visit date exists, stop and flag.
 
-### 4. Confirm before submitting
+### 4. Confirm
 
-Echo: Patient / Visit date / Diagnosis / Amount — then proceed.
+Echo: **Patient / Visit date / Diagnosis / Total HKD** — then proceed.
 
-### 5. Drive the portal with Playwright MCP
+### 5. Submit via Playwright
 
 #### Login
 ```js
-// Use browser_run_code_unsafe — fast JS-based login, avoids timeouts
 async (page) => {
   await page.goto('https://customer.axaglobalhealthcare.com');
   await page.evaluate(() => {
@@ -73,19 +55,15 @@ async (page) => {
   await page.waitForLoadState('domcontentloaded');
 }
 ```
-- If "An active session already exists" appears → click Continue, then re-login
-- If session still active → navigate directly to `/Partner/Claims/SubmitInvoice`
+- "An active session already exists" → click Continue, then re-login
+- Session still active → go directly to `/Partner/Claims/SubmitInvoice`
 
-#### Navigate to form
-```
-https://customer.axaglobalhealthcare.com/Partner/Claims/SubmitInvoice
-```
-
-#### Fill the form (confirmed field IDs)
+#### Fill the form
+Navigate to `https://customer.axaglobalhealthcare.com/Partner/Claims/SubmitInvoice`
 
 | Field | ID | Value |
 |---|---|---|
-| Patient | `#PatientName` | option text matching `portal_label` |
+| Patient | `#PatientName` | `portal_label` from secrets.json |
 | Over 16? | `#IsPatientAbove16` | `No` |
 | Claim number? | `#IsClaimNumberAvailable` | `No` |
 | Accident? | `#IsInjuryCausedByAccident` | `No` |
@@ -102,9 +80,9 @@ https://customer.axaglobalhealthcare.com/Partner/Claims/SubmitInvoice
 | Acknowledge popup | `#HasAcknowledged` | click if unchecked |
 | Close popup | `.popup-close` | click |
 
-Dismiss Chrome's "Save password" popup with `page.keyboard.press('Escape')`.
+Dismiss "Save password" popup: `page.keyboard.press('Escape')`
 
-#### Upload the receipt
+#### Upload receipt
 ```js
 async (page) => {
   await page.locator('#browseFiles').setInputFiles('C:\\Users\\Eric\\Github\\AXA\\invoices\\receipts_inbox\\FILENAME.jpg');
@@ -116,7 +94,7 @@ async (page) => {
 await page.locator('#submitInvoiceReview').click();
 ```
 
-#### Submit on the summary page
+#### Submit
 ```js
 async (page) => {
   const checkboxes = await page.locator('input[type=checkbox]').all();
@@ -128,18 +106,18 @@ async (page) => {
 }
 ```
 
-Take a screenshot to capture the reference number from the confirmation page.
+Take a screenshot to capture the reference number.
 
-### 6. Log the submission
+### 6. Log the result
 
-1. Append a new entry to `claims_data\AXA_Claims_Log.json` matching existing entry shape.
-2. Update the `summary` block (`total_claims`, `total_amount_claimed_hkd`, `last_submission_date`).
-3. Move receipt: `invoices\receipts_inbox\FILENAME.jpg` → `invoices\submitted_claims\<ref>_<FirstName>.jpg`
-4. Confirm: "Logged claim <ref> for <patient>, HKD <amount>."
+1. Append entry to `claims_data\AXA_Claims_Log.json` matching existing shape.
+2. Update `summary` block (`total_claims`, `total_amount_claimed_hkd`, `last_submission_date`).
+3. Move: `invoices\receipts_inbox\FILENAME.jpg` → `invoices\submitted_claims\<ref>_<FirstName>.jpg`
+4. Confirm: "Logged claim `<ref>` for `<patient>`, HKD `<amount>`."
 
 ## Failure modes
 
-- Receipt OCR ambiguous → show what was read, ask Eric.
-- Patient name not in `secrets.json` → ask Eric.
-- Portal layout changed → stop and report the missing field.
-- Login fails → retry once; if still fails, ask Eric to check `secrets.json`.
+- OCR ambiguous → show what was read, ask Eric
+- Patient not in `secrets.json` → ask Eric
+- Portal layout changed → stop, report missing field
+- Login fails → retry once; if still fails, ask Eric to check `secrets.json`
