@@ -109,7 +109,7 @@ Dismiss Chrome's "Save password" popup with `page.keyboard.press('Escape')`.
 Use `browser_run_code_unsafe` — NOT `browser_click` on `#browseFiles` (it's off-screen):
 ```js
 async (page) => {
-  await page.locator('#browseFiles').setInputFiles('C:\\Users\\Eric\\Github\\AXA\\receipts_inbox\\FILENAME.jpg');
+  await page.locator('#browseFiles').setInputFiles('C:\\Users\\Eric\\Github\\AXA\\invoices/receipts_inbox\\FILENAME.jpg');
 }
 ```
 
@@ -138,7 +138,7 @@ After getting the reference number from the confirmation screenshot:
 
 1. Append a new entry to `AXA_Claims_Log.json` matching existing entry shape.
 2. Update the `summary` block (`total_claims`, `total_amount_claimed_hkd`, `last_submission_date`).
-3. Move receipt: `receipts_inbox\FILENAME.jpg` → `submitted_claims\<ref>_<FirstName>.jpg`
+3. Move receipt: `invoices/receipts_inbox\FILENAME.jpg` → `invoices/submitted_claims\<ref>_<FirstName>.jpg`
 4. Confirm to Eric: "Logged claim <ref> for <patient>, HKD <amount>."
 
 ## Hard rules
@@ -147,8 +147,8 @@ After getting the reference number from the confirmation screenshot:
 - If the receipt is not in English, stop and flag.
 - If currency is not HKD, stop and ask.
 - If the invoice already exists in the log (same patient + date), stop and flag.
-- Never delete receipts. Always move to `submitted_claims\`.
-- Receipts must be in `C:\Users\Eric\Github\AXA\receipts_inbox\` for upload to work.
+- Never delete receipts. Always move to `invoices/submitted_claims\`.
+- Receipts must be in `C:\Users\Eric\Github\AXA\invoices/receipts_inbox\` for upload to work.
 
 ## Credentials
 

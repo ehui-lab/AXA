@@ -4,8 +4,8 @@
 This guide covers how to submit outpatient medical claims for dependants on the AXA Global Healthcare Customer Online portal.
 
 - **Portal:** https://customer.axaglobalhealthcare.com
-- **Policy:** BZE00071341 (Global Health Plan Enterprise HK USD)
-- **Account email:** acc.hkt@gmail.com
+- **Policy:** see `reference/secrets.json`
+- **Account email:** see `reference/secrets.json`
 
 ---
 
