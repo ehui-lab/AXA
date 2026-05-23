@@ -1,25 +1,25 @@
 {
   "policy_holder": {
-    "policy_number": "BZE00071341",
+    "policy_number": "YOUR_POLICY_NUMBER",
     "plan": "Global Health Plan Enterprise HK USD",
-    "portal_email": "acc.hkt@gmail.com",
-    "reimbursement_bank": "HSBC",
-    "reimbursement_account": "454518887833"
+    "portal_email": "YOUR_PORTAL_EMAIL",
+    "reimbursement_bank": "YOUR_BANK",
+    "reimbursement_account": "YOUR_BANK_ACCOUNT"
   },
   "dependants": [
     {
-      "portal_label": "Master Harvey",
-      "full_name": "HUI HARVEY YIK TING",
+      "portal_label": "Master Child1",
+      "full_name": "YOUR_CHILD1_FULL_NAME",
       "relationship": "Son",
       "over_16": false,
-      "match_keywords": ["HARVEY", "HUI HARVEY", "HARVEY YIK TING"]
+      "match_keywords": ["CHILD1_FIRST_NAME", "CHILD1_FULL_NAME"]
     },
     {
-      "portal_label": "Master Harris",
-      "full_name": "HUI HARRIS WAI TING",
+      "portal_label": "Master Child2",
+      "full_name": "YOUR_CHILD2_FULL_NAME",
       "relationship": "Son",
       "over_16": false,
-      "match_keywords": ["HARRIS", "HUI HARRIS", "HARRIS WAI TING"]
+      "match_keywords": ["CHILD2_FIRST_NAME", "CHILD2_FULL_NAME"]
     }
   ],
   "defaults": {

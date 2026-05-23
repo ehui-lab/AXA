@@ -3,10 +3,10 @@
 This folder is a reusable workspace for submitting outpatient claims on the
 AXA Global Healthcare Customer Online portal.
 
-**Policy:** BZE00071341 (Global Health Plan Enterprise HK USD)
-**Account email:** acc.hkt@gmail.com
+**Policy:** YOUR_POLICY_NUMBER (Global Health Plan Enterprise HK USD)
+**Account email:** YOUR_PORTAL_EMAIL
 **Portal:** https://customer.axaglobalhealthcare.com
-**Reimbursement bank:** HSBC (454518887833)
+**Reimbursement bank:** YOUR_BANK (YOUR_BANK_ACCOUNT)
 
 ---
 

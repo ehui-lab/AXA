@@ -58,7 +58,7 @@ Then proceed — Eric trusts the automation to complete the full submission.
 async (page) => {
   await page.goto('https://customer.axaglobalhealthcare.com');
   await page.evaluate(() => {
-    document.querySelector('#UserName').value = 'acc.hkt@gmail.com';
+    document.querySelector('#UserName').value = 'YOUR_PORTAL_EMAIL';
     document.querySelector('#Password').value = 'Care2019!';  // from .env
     ['#UserName','#Password'].forEach(sel => {
       const el = document.querySelector(sel);
