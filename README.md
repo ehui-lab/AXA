@@ -1,6 +1,6 @@
 # AXA Global Healthcare — Claim Submission
 
-Automation workspace for submitting and tracking outpatient claims on the [AXA Global Healthcare Customer Online portal](https://customer.axaglobalhealthcare.com) using Claude + Playwright MCP.
+Automation workspace for submitting and tracking claims on the [AXA Global Healthcare Customer Online portal](https://customer.axaglobalhealthcare.com) using Claude + Playwright MCP.
 
 ---
 
