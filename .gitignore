@@ -1,0 +1,15 @@
+# Credentials
+.env
+
+# Personal claims data
+AXA_Claims_Log.json
+
+# Receipt images (sons' medical receipts)
+receipts_inbox/*
+!receipts_inbox/.gitkeep
+submitted_claims/*
+!submitted_claims/.gitkeep
+
+# Downloaded CSVs and portal data
+claims_data/
+.playwright-mcp/

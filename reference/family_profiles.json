@@ -1,0 +1,35 @@
+{
+  "policy_holder": {
+    "policy_number": "BZE00071341",
+    "plan": "Global Health Plan Enterprise HK USD",
+    "portal_email": "acc.hkt@gmail.com",
+    "reimbursement_bank": "HSBC",
+    "reimbursement_account": "454518887833"
+  },
+  "dependants": [
+    {
+      "portal_label": "Master Harvey",
+      "full_name": "HUI HARVEY YIK TING",
+      "relationship": "Son",
+      "over_16": false,
+      "match_keywords": ["HARVEY", "HUI HARVEY", "HARVEY YIK TING"]
+    },
+    {
+      "portal_label": "Master Harris",
+      "full_name": "HUI HARRIS WAI TING",
+      "relationship": "Son",
+      "over_16": false,
+      "match_keywords": ["HARRIS", "HUI HARRIS", "HARRIS WAI TING"]
+    }
+  ],
+  "defaults": {
+    "treatment_location": "Hong Kong",
+    "treatment_category": "Consultation and medication",
+    "currency": "Hong Kong Dollar",
+    "already_paid": true,
+    "preferred_payment_method": true,
+    "documents_in_english": true,
+    "accident": false,
+    "claim_number_exists": false
+  }
+}
