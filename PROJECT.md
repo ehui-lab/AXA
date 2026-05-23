@@ -34,7 +34,7 @@ When Eric drops a receipt image (or PDF) into the Cowork chat, Claude should:
 6. **Stop at the review/summary page.** Do NOT click final Submit.
    Eric reviews visually and clicks Submit himself.
 7. After Eric reports the reference number, **append** the claim to
-   `AXA_Claims_Log.json` and **move** the receipt image from
+   `claims_data/AXA_Claims_Log.json` and **move** the receipt image from
    `receipts_inbox/` to `submitted_claims/<reference_number>_<patient>.jpg`.
 
 ---
@@ -44,7 +44,7 @@ When Eric drops a receipt image (or PDF) into the Cowork chat, Claude should:
 ```
 C:\Users\Eric\Github\AXA\
 ├── PROJECT.md                            ← this file (read first)
-├── AXA_Claims_Log.json                   ← canonical log of all submitted claims
+├── claims_data/AXA_Claims_Log.json                   ← canonical log of all submitted claims
 ├── receipts_inbox\                       ← drop receipts here (working area)
 ├── submitted_claims\                     ← receipts filed after submission
 ├── reference\

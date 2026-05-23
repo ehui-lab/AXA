@@ -20,7 +20,7 @@ AXA/
 ├── skills/
 │   └── axa-claim/
 │       └── SKILL.md                        ← Claude auto-trigger instructions
-└── AXA_Claims_Log.json                     ← canonical log (gitignored)
+└── claims_data/AXA_Claims_Log.json                     ← canonical log (gitignored)
 ```
 
 ---
@@ -49,4 +49,4 @@ See [reference/AXA_Claim_Submission_Guide.md](reference/AXA_Claim_Submission_Gui
 
 ## Security
 
-`secrets.json`, `AXA_Claims_Log.json`, and all receipt images are gitignored and never leave your local machine.
+`secrets.json`, `claims_data/AXA_Claims_Log.json`, and all receipt images are gitignored and never leave your local machine.

@@ -3,7 +3,7 @@
 reference/secrets.json
 
 # Personal claims data
-AXA_Claims_Log.json
+claims_data/AXA_Claims_Log.json
 
 # Receipt images (sons' medical receipts)
 invoices/receipts_inbox/*

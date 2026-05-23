@@ -17,7 +17,7 @@ Trigger automatically when ANY of the following is true:
 
 1. `C:\Users\Eric\Github\AXA\PROJECT.md` — the playbook
 2. `C:\Users\Eric\Github\AXA\reference\secrets.json` — all credentials, names, policy info
-3. `C:\Users\Eric\Github\AXA\AXA_Claims_Log.json` — to avoid duplicate submissions
+3. `C:\Users\Eric\Github\AXA\claims_data/AXA_Claims_Log.json` — to avoid duplicate submissions
 
 All sensitive values (email, password, policy number, patient names, bank account) come from `secrets.json`.
 
@@ -43,7 +43,7 @@ Process ONE patient at a time — never combine.
 
 ### 3. Check for duplicates
 
-Scan `AXA_Claims_Log.json`. If same patient + same visit date already exists, stop and flag.
+Scan `claims_data/AXA_Claims_Log.json`. If same patient + same visit date already exists, stop and flag.
 
 ### 4. Confirm before submitting
 
@@ -136,7 +136,7 @@ Take a screenshot to capture the reference number from the confirmation page.
 
 After getting the reference number from the confirmation screenshot:
 
-1. Append a new entry to `AXA_Claims_Log.json` matching existing entry shape.
+1. Append a new entry to `claims_data/AXA_Claims_Log.json` matching existing entry shape.
 2. Update the `summary` block (`total_claims`, `total_amount_claimed_hkd`, `last_submission_date`).
 3. Move receipt: `invoices/receipts_inbox\FILENAME.jpg` → `invoices/submitted_claims\<ref>_<FirstName>.jpg`
 4. Confirm to Eric: "Logged claim <ref> for <patient>, HKD <amount>."
