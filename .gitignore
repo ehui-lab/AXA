@@ -3,14 +3,11 @@
 reference/secrets.json
 
 # Personal claims data
-claims_data/AXA_Claims_Log.json
+claims_data/
+.playwright-mcp/
 
-# Receipt images (sons' medical receipts)
+# Invoices (keep folder structure, ignore actual files)
 invoices/receipts_inbox/*
 !invoices/receipts_inbox/.gitkeep
 invoices/submitted_claims/*
 !invoices/submitted_claims/.gitkeep
-
-# Downloaded CSVs and portal data
-claims_data/
-.playwright-mcp/
