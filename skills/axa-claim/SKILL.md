@@ -9,55 +9,55 @@ description: Use this skill whenever Eric drops a medical receipt image, PDF, or
 
 Trigger automatically when ANY of the following is true:
 - A receipt image / PDF is dropped and the project folder `C:\Users\Eric\Github\AXA` is connected
-- The receipt mentions Union Hospital, Virtus Children at 818, MOSxx-xxxxxxx invoice numbers, or one of the
-  patient names in `reference/secrets.json`
+- The receipt mentions Union Hospital, Virtus Children at 818, MOSxx-xxxxxxx invoice numbers, or one of the patient names in `reference/secrets.json`
 - Eric says "submit AXA claim", "claim this", "file with AXA", or similar
 
 ## Always read these files first
 
-1. `C:\Users\Eric\Github\AXA\PROJECT.md` — the playbook
-2. `C:\Users\Eric\Github\AXA\reference\secrets.json` — all credentials, names, policy info
-3. `C:\Users\Eric\Github\AXA\claims_data/AXA_Claims_Log.json` — to avoid duplicate submissions
+1. `C:\Users\Eric\Github\AXA\reference\secrets.json` — all credentials, names, policy info
+2. `C:\Users\Eric\Github\AXA\claims_data\AXA_Claims_Log.json` — to avoid duplicate submissions
 
-All sensitive values (email, password, policy number, patient names, bank account) come from `secrets.json`.
+All sensitive values (email, password, policy number, patient names, bank account) come from `secrets.json`. Never hardcode them.
+
+## Rules
+
+- One claim per patient per visit — never combine.
+- English receipts only — if not in English, stop and flag.
+- HKD only — if different currency, stop and ask.
+- Never delete receipts — always move to `invoices\submitted_claims\`.
+- Receipts must be in `invoices\receipts_inbox\` for upload to work.
+- If the invoice already exists in the log (same patient + date), stop and flag.
 
 ## Step-by-step
 
 ### 1. Extract receipt data
 
-Read the dropped receipt image. Pull:
-- Patient name → match to portal label via `secrets.json` dependants `match_keywords`
-- Visit date
-- Doctor name
-- Diagnosis (use verbatim for the "Describe symptoms" field)
+Read the receipt image. Pull:
+- Patient name → match via `secrets.json` dependants `match_keywords`
+- Visit date, doctor name, diagnosis (use verbatim for the symptoms field)
 - Consultation fee, medication, lab amounts, and **total** (HKD)
 - Payment method
 
-If any field is unclear from the image, ask Eric before proceeding.
+Ask Eric if any field is unclear before proceeding.
 
 ### 2. Match the patient
 
-Look up the patient in `secrets.json` → `dependants` using `match_keywords`.
+Look up in `secrets.json` → `dependants` using `match_keywords`.
 Use `portal_label` for the portal dropdown and `first_name` for file naming.
-Process ONE patient at a time — never combine.
 
 ### 3. Check for duplicates
 
-Scan `claims_data/AXA_Claims_Log.json`. If same patient + same visit date already exists, stop and flag.
+Scan `claims_data\AXA_Claims_Log.json`. Stop and flag if same patient + visit date exists.
 
 ### 4. Confirm before submitting
 
-Echo a short summary:
-- Patient / Visit date / Diagnosis / Amount
-
-Then proceed — Eric trusts the automation to complete the full submission.
+Echo: Patient / Visit date / Diagnosis / Amount — then proceed.
 
 ### 5. Drive the portal with Playwright MCP
 
 #### Login
 ```js
 // Use browser_run_code_unsafe — fast JS-based login, avoids timeouts
-// Read email and password from secrets.json before running this
 async (page) => {
   await page.goto('https://customer.axaglobalhealthcare.com');
   await page.evaluate(() => {
@@ -73,52 +73,50 @@ async (page) => {
   await page.waitForLoadState('domcontentloaded');
 }
 ```
-- If session is still active, navigate directly to `/Partner/Claims/SubmitInvoice`
-- If "An active session already exists" appears, scroll down and click Continue
+- If "An active session already exists" appears → click Continue, then re-login
+- If session still active → navigate directly to `/Partner/Claims/SubmitInvoice`
 
 #### Navigate to form
 ```
 https://customer.axaglobalhealthcare.com/Partner/Claims/SubmitInvoice
 ```
 
-#### Fill the form in one evaluate() call
-All real field IDs (confirmed working):
+#### Fill the form (confirmed field IDs)
 
 | Field | ID | Value |
 |---|---|---|
-| Patient | `#PatientName` | option text containing patient name |
-| Over 16? | `#IsPatientAbove16` | `No` (for children) |
+| Patient | `#PatientName` | option text matching `portal_label` |
+| Over 16? | `#IsPatientAbove16` | `No` |
 | Claim number? | `#IsClaimNumberAvailable` | `No` |
 | Accident? | `#IsInjuryCausedByAccident` | `No` |
-| Symptoms | `#Symptoms` (textarea) | diagnosis verbatim |
-| First aware date | `#symptomDate` | `YYYY-MM-DD` (visit date) |
-| Treatments | `#TreatmentsRequired` (multi-select) | option containing "consultation" |
-| Treatment date | `#treatmentDate` | `YYYY-MM-DD` (visit date) |
+| Symptoms | `#Symptoms` | diagnosis verbatim |
+| First aware date | `#symptomDate` | `YYYY-MM-DD` |
+| Treatments | `#TreatmentsRequired` | option containing "consultation" |
+| Treatment date | `#treatmentDate` | `YYYY-MM-DD` |
 | Country | `#CountryOfTreatment` | `Hong Kong` |
 | Already paid? | `#IsPaymentCompleted` | `Yes` |
 | Amount | `#ClaimAmount` | total HKD as number |
-| Currency | `#CurrencyType` | option text "Hong Kong Dollar" |
+| Currency | `#CurrencyType` | `Hong Kong Dollar` |
 | Preferred payment? | `#IsPreferredPaymentMethod` | `Yes` |
 | English? | `#InvoiceInEnglish` | `Yes` |
-| Acknowledge popup | `#HasAcknowledged` (checkbox) | click if unchecked |
+| Acknowledge popup | `#HasAcknowledged` | click if unchecked |
 | Close popup | `.popup-close` | click |
 
 Dismiss Chrome's "Save password" popup with `page.keyboard.press('Escape')`.
 
 #### Upload the receipt
-Use `browser_run_code_unsafe` — NOT `browser_click` on `#browseFiles` (it's off-screen):
 ```js
 async (page) => {
-  await page.locator('#browseFiles').setInputFiles('C:\\Users\\Eric\\Github\\AXA\\invoices/receipts_inbox\\FILENAME.jpg');
+  await page.locator('#browseFiles').setInputFiles('C:\\Users\\Eric\\Github\\AXA\\invoices\\receipts_inbox\\FILENAME.jpg');
 }
 ```
 
-#### Click Save & review
+#### Save & review
 ```js
 await page.locator('#submitInvoiceReview').click();
 ```
 
-#### On the summary page — submit fully
+#### Submit on the summary page
 ```js
 async (page) => {
   const checkboxes = await page.locator('input[type=checkbox]').all();
@@ -134,29 +132,14 @@ Take a screenshot to capture the reference number from the confirmation page.
 
 ### 6. Log the submission
 
-After getting the reference number from the confirmation screenshot:
-
-1. Append a new entry to `claims_data/AXA_Claims_Log.json` matching existing entry shape.
+1. Append a new entry to `claims_data\AXA_Claims_Log.json` matching existing entry shape.
 2. Update the `summary` block (`total_claims`, `total_amount_claimed_hkd`, `last_submission_date`).
-3. Move receipt: `invoices/receipts_inbox\FILENAME.jpg` → `invoices/submitted_claims\<ref>_<FirstName>.jpg`
-4. Confirm to Eric: "Logged claim <ref> for <patient>, HKD <amount>."
+3. Move receipt: `invoices\receipts_inbox\FILENAME.jpg` → `invoices\submitted_claims\<ref>_<FirstName>.jpg`
+4. Confirm: "Logged claim <ref> for <patient>, HKD <amount>."
 
-## Hard rules
+## Failure modes
 
-- Never combine multiple patients into one claim.
-- If the receipt is not in English, stop and flag.
-- If currency is not HKD, stop and ask.
-- If the invoice already exists in the log (same patient + date), stop and flag.
-- Never delete receipts. Always move to `invoices/submitted_claims\`.
-- Receipts must be in `C:\Users\Eric\Github\AXA\invoices/receipts_inbox\` for upload to work.
-
-## Credentials
-
-All credentials are in `C:\Users\Eric\Github\AXA\reference\secrets.json` — read this file at the start of every session. Never hardcode values.
-
-## Failure modes / when to ask Eric
-
-- Receipt OCR ambiguous (smudged numbers, covered totals) → show what was read, ask.
-- Patient name not in `secrets.json` → ask.
-- AXA portal layout changed → stop and report field that is missing.
-- Login fails → retry once with the JS evaluate approach; if still fails, ask Eric to check `secrets.json`.
+- Receipt OCR ambiguous → show what was read, ask Eric.
+- Patient name not in `secrets.json` → ask Eric.
+- Portal layout changed → stop and report the missing field.
+- Login fails → retry once; if still fails, ask Eric to check `secrets.json`.
