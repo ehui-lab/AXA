@@ -10,22 +10,23 @@ description: Use this skill whenever Eric drops a medical receipt image, PDF, or
 Trigger automatically when ANY of the following is true:
 - A receipt image / PDF is dropped and the project folder `C:\Users\Eric\Github\AXA` is connected
 - The receipt mentions Union Hospital, Virtus Children at 818, MOSxx-xxxxxxx invoice numbers, or one of the
-  patient names in `C:\Users\Eric\Github\AXA\reference\family_profiles.json`
+  patient names in `reference/secrets.json`
 - Eric says "submit AXA claim", "claim this", "file with AXA", or similar
 
 ## Always read these files first
 
 1. `C:\Users\Eric\Github\AXA\PROJECT.md` — the playbook
-2. `C:\Users\Eric\Github\AXA\reference\family_profiles.json` — defaults + matching rules
+2. `C:\Users\Eric\Github\AXA\reference\secrets.json` — all credentials, names, policy info
 3. `C:\Users\Eric\Github\AXA\AXA_Claims_Log.json` — to avoid duplicate submissions
-4. `C:\Users\Eric\Github\AXA\.env` — credentials (AXA_PASSWORD)
+
+All sensitive values (email, password, policy number, patient names, bank account) come from `secrets.json`.
 
 ## Step-by-step
 
 ### 1. Extract receipt data
 
 Read the dropped receipt image. Pull:
-- Patient name → match to portal label via `family_profiles.json`
+- Patient name → match to portal label via `secrets.json` dependants `match_keywords`
 - Visit date
 - Doctor name
 - Diagnosis (use verbatim for the "Describe symptoms" field)
@@ -36,7 +37,8 @@ If any field is unclear from the image, ask Eric before proceeding.
 
 ### 2. Match the patient
 
-Look up the patient in `family_profiles.json` using `match_keywords`.
+Look up the patient in `secrets.json` → `dependants` using `match_keywords`.
+Use `portal_label` for the portal dropdown and `first_name` for file naming.
 Process ONE patient at a time — never combine.
 
 ### 3. Check for duplicates
@@ -55,11 +57,12 @@ Then proceed — Eric trusts the automation to complete the full submission.
 #### Login
 ```js
 // Use browser_run_code_unsafe — fast JS-based login, avoids timeouts
+// Read email and password from secrets.json before running this
 async (page) => {
   await page.goto('https://customer.axaglobalhealthcare.com');
   await page.evaluate(() => {
-    document.querySelector('#UserName').value = 'YOUR_PORTAL_EMAIL';
-    document.querySelector('#Password').value = 'Care2019!';  // from .env
+    document.querySelector('#UserName').value = '<portal_email from secrets.json>';
+    document.querySelector('#Password').value = '<portal_password from secrets.json>';
     ['#UserName','#Password'].forEach(sel => {
       const el = document.querySelector(sel);
       el.dispatchEvent(new Event('input', {bubbles:true}));
@@ -149,12 +152,11 @@ After getting the reference number from the confirmation screenshot:
 
 ## Credentials
 
-- Portal email: `acc.hkt@gmail.com`
-- Password: read from `C:\Users\Eric\Github\AXA\.env` → `AXA_PASSWORD`
+All credentials are in `C:\Users\Eric\Github\AXA\reference\secrets.json` — read this file at the start of every session. Never hardcode values.
 
 ## Failure modes / when to ask Eric
 
 - Receipt OCR ambiguous (smudged numbers, covered totals) → show what was read, ask.
-- Patient name not in `family_profiles.json` → ask.
+- Patient name not in `secrets.json` → ask.
 - AXA portal layout changed → stop and report field that is missing.
-- Login fails → retry once with the JS evaluate approach; if still fails, ask Eric to check password in `.env`.
+- Login fails → retry once with the JS evaluate approach; if still fails, ask Eric to check `secrets.json`.

@@ -1,5 +1,6 @@
 # Credentials
 .env
+reference/secrets.json
 
 # Personal claims data
 AXA_Claims_Log.json
